@@ -17,7 +17,7 @@ async function main(seed) {
         metamaskVersion: 'v10.15.0', 
         defaultViewport: null
     });
-    console.log('Setup wallet...\nUsing seed', seed);
+    console.log('Setup wallet...\nUsing seed :', seed);
     const metamask = await dappeteer.setupMetamask(browser,{seed: seed})
     const switchNetwork = async () => {
         try {
@@ -153,7 +153,21 @@ async function main(seed) {
         input: fileStream,
         crlfDelay: Infinity
     });
+    const runtime = async (seed) => {
+        await main(seed)
+        .then(() => {
+            console.log(`Seed : ${seed}`);
+            console.log('Status : Success');
+        })
+        .catch(async(err) => {
+            console.log(err.message);
+            console.log(`Seed : ${seed}`);
+            console.log('Status : Error');
+            console.log('Re-trying...');
+            await runtime(seed);
+        })
+    }
     for await (const seed of rl) {
-        await main(seed);
+        await runtime(seed)
     }
 })();
